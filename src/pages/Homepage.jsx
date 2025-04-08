@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { read } from "../utils/read";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import CartModal from "../components/CartModal";
 import { useState } from "react";
+import * as XLSX from "xlsx";
 
 function Homepage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -13,11 +14,29 @@ function Homepage() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    const data = await read(file);
-    setProducts(data);
-  };
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const file = await fetch("products.xlsx");
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data);
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        setProducts(jsonData);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+      
+
+    fetchProducts();
+  },[]);
+
+  // const handleFileUpload = async (event) => {
+  //   const file = event.target.files[0];
+  //   const data = await read(file);
+  //   setProducts(data);
+  // };
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -81,12 +100,12 @@ function Homepage() {
             onCategorySelect={handleCategorySelect}
           />
           <div className="flex-1 p-4">
-            <input 
+            {/* <input 
               type="file" 
               accept=".xlsx" 
               onChange={handleFileUpload}
               className="mb-4 p-2 border rounded-md" 
-            />
+            /> */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
               {filteredProducts.map((product, index) => (
                 <div key={index} className="border rounded-md p-4 shadow-md">
